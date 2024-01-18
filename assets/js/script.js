@@ -85,7 +85,12 @@ let startButton = document.getElementById("start");
 let startScreen = document.getElementById("start-screen");
 let questionEl = document.getElementById("questions");
 let questionTitle = document.getElementById("question-title");
-let choices = document.getElementById("choices");
+let choicesEl = document.getElementById("choices");
+let feedbackEl = document.getElementById("feedback");
+let endScreen = document.getElementById("end-screen");
+let finalScore = document.getElementById("final-score");
+let qCount = 0;
+let stop = false;
 
 // Start button
 // When pressed the timer starts and the first question is displayed
@@ -98,9 +103,8 @@ startButton.addEventListener("click", function () {
     secondsLeft--;
     time.textContent = secondsLeft;
 
-    if (secondsLeft === 0) {
+    if (secondsLeft === 0 || stop) {
       clearInterval(timerInterval);
-      endQuiz();
     }
   }, 1000);
   startQuiz();
@@ -111,19 +115,54 @@ startButton.addEventListener("click", function () {
 function startQuiz() {
   startScreen.setAttribute("class", "hide");
   questionEl.setAttribute("class", "");
-  questionTitle.textContent = questions[0].title;
 
-  let choice1 = document.createElement("button");
-  let choice2 = document.createElement("button");
-  let choice3 = document.createElement("button");
-  let choice4 = document.createElement("button");
-  choice1.textContent = questions[0].answers[0];
-  choice2.textContent = questions[0].answers[1];
-  choice3.textContent = questions[0].answers[2];
-  choice4.textContent = questions[0].answers[3];
-  choices.append(choice1, choice2, choice3, choice4);
+  if (qCount < questions.length) {
+    displayQuestion();
+  }
 }
+
+// Display questions
+
+function displayQuestion() {
+  questionTitle.textContent = questions[qCount].title;
+
+  choicesEl.innerHTML = "";
+
+  for (let i = 0; i < 4; i++) {
+    let choice = document.createElement("button");
+    choice.textContent = questions[qCount].answers[i];
+    choicesEl.appendChild(choice);
+  }
+}
+
+// Add event listeners
+
+choicesEl.addEventListener("click", function (event) {
+  let answer = event.target;
+  if (answer.textContent == questions[qCount].correct) {
+    feedbackEl.setAttribute("class", "feedback");
+    feedbackEl.textContent = "Correct!";
+  } else {
+    feedbackEl.setAttribute("class", "feedback");
+    feedbackEl.textContent = "Wrong!";
+    secondsLeft -= 10;
+  }
+
+  qCount++;
+
+  if (qCount < questions.length && secondsLeft > 0) {
+    displayQuestion();
+  } else {
+    endQuiz();
+  }
+});
 
 // End quiz
 
-function endQuiz() {}
+function endQuiz() {
+  stop = true;
+  questionEl.setAttribute("class", "hide");
+  endScreen.setAttribute("class", "");
+  let score = secondsLeft;
+  finalScore.textContent = score;
+}
