@@ -89,8 +89,11 @@ let choicesEl = document.getElementById("choices");
 let feedbackEl = document.getElementById("feedback");
 let endScreen = document.getElementById("end-screen");
 let finalScore = document.getElementById("final-score");
+let initialsInput = document.getElementById("initials");
+let submitBtn = document.getElementById("submit");
 let qCount = 0;
 let stop = false;
+let score = 0;
 
 // Start button
 // When pressed the timer starts and the first question is displayed
@@ -116,9 +119,7 @@ function startQuiz() {
   startScreen.setAttribute("class", "hide");
   questionEl.setAttribute("class", "");
 
-  if (qCount < questions.length) {
-    displayQuestion();
-  }
+  displayQuestion();
 }
 
 // Display questions
@@ -130,6 +131,7 @@ function displayQuestion() {
 
   for (let i = 0; i < 4; i++) {
     let choice = document.createElement("button");
+    choice.setAttribute("class", "button");
     choice.textContent = questions[qCount].answers[i];
     choicesEl.appendChild(choice);
   }
@@ -143,9 +145,15 @@ choicesEl.addEventListener("click", function (event) {
     feedbackEl.setAttribute("class", "feedback");
     feedbackEl.textContent = "Correct!";
   } else {
-    feedbackEl.setAttribute("class", "feedback");
-    feedbackEl.textContent = "Wrong!";
-    secondsLeft -= 10;
+    if (secondsLeft > 10) {
+      feedbackEl.setAttribute("class", "feedback");
+      feedbackEl.textContent = "Wrong!";
+      secondsLeft -= 10;
+    } else {
+      feedbackEl.setAttribute("class", "feedback");
+      feedbackEl.textContent = "Wrong!";
+      secondsLeft = 0;
+    }
   }
 
   qCount++;
@@ -163,6 +171,38 @@ function endQuiz() {
   stop = true;
   questionEl.setAttribute("class", "hide");
   endScreen.setAttribute("class", "");
-  let score = secondsLeft;
+  score = secondsLeft;
   finalScore.textContent = score;
+  feedbackEl.textContent = "Input max 3 characters!";
 }
+
+// Save/Load highscores
+
+function saveScore() {
+  let initialsValue = initialsInput.value;
+  console.log(initialsInput.value);
+  if (initialsValue.trim()) {
+    let scoreObject = {
+      user: initialsValue.trim(),
+      userScore: score,
+    };
+    let storageKey = "SavedHighscores";
+    let storageValue = localStorage.getItem(storageKey);
+    let savedHighscores;
+
+    if (storageValue) {
+      savedHighscores = JSON.parse(storageValue);
+    } else {
+      savedHighscores = [];
+    }
+
+    savedHighscores.push(scoreObject);
+    localStorage.setItem("SavedHighscores", JSON.stringify(savedHighscores));
+    window.location.href = "highscores.html";
+  } else {
+    alert("Please enter initials.");
+    return;
+  }
+}
+
+submitBtn.addEventListener("click", saveScore);
